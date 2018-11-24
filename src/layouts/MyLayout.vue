@@ -32,7 +32,12 @@
         link
         inset-delimiter
       >
-        <q-list-header>Essential Links</q-list-header>
+        <q-list-header>Rooms</q-list-header>
+            <q-item v-if=userInfoComplete  v-for="(msg, index) in rooms"
+              :key="`avatar-${index}`"
+              @click.native="directToChat(msg.room_id)">
+              <q-item-main :label="msg.room_title" ></q-item-main>
+          </q-item>
       </q-list>
     </q-layout-drawer>
 
@@ -49,11 +54,56 @@ export default {
   name: 'MyLayout',
   data () {
     return {
-      leftDrawerOpen: false
+      leftDrawerOpen: true,
+      token: 'TOKeN',
+      userInfo: '',
+      userInfoComplete: false,
+      rooms: [],
+      goodToken: 'oPa9kv7iYv5vkmqeoxPBrUWgb1FRDejlWmkZB1srh7KPWY3xnT'
     }
   },
   methods: {
-    openURL
+    openURL,
+    directToChat (id) {
+      this.$router.push({ path: `/chat/${id}` })
+    },
+    say: function (message) {
+      alert(message)
+    }
+  },
+  created () {
+    let instance = this
+    this.$q.dialog({
+      itle: 'Prompt',
+      message: 'Podaj user token',
+      prompt: {
+        model: '',
+        type: 'text' // optional
+      },
+      color: 'secondary'
+    }).then(data => {
+      this.token = data
+      this.$axios.get('http://localhost:4000/api/user', {
+        params: {
+          access_token: this.token,
+          auth_token: this.goodToken
+        }}).then(function (response) {
+        // handle success
+        console.log(response.data)
+        instance.userInfo = response.data
+        instance.$store.state.example.userInfo = response.data
+        instance.rooms = response.data.tokens
+        instance.userInfoComplete = true
+      }).catch(function (error) {
+        // handle error
+        console.log(error)
+        instance.$q.dialog({
+          title: 'Błąd',
+          message: 'Zły token/brak połączenia z serwerem',
+          color: 'secondary'
+        })
+      })
+    })
   }
 }
 </script>
