@@ -89,6 +89,7 @@ export default {
           auth_token: this.goodToken
         }}).then(function (response) {
         // handle success
+        response.data.options = JSON.parse(response.data.options)
         console.log(response.data)
         instance.userInfo = response.data
         instance.$store.state.example.userInfo = response.data
